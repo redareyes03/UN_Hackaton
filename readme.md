@@ -95,8 +95,6 @@ To run the app successfully, **you must obtain 4 external data files** (details 
 **Place these files in the appropriate folder as instructed by the project owner or documentation.**
 If you need help sourcing these files, please contact the maintainer.
 
-*Example (replace with your actual file names and locations):*
-
 * `data/coolr/nasa_coolr_events_point.dbf` — NASA Global Landslide Catalog (GLC)
 * `data/osm/mexico-latest.osm.pbf` — Locations of hospitals, clinics, schools, etc.
 * `data/population/mex_pop_2025_100m.tif` — 2025 population raster (100 m resolution).
