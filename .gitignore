@@ -199,7 +199,11 @@ cython_debug/
 _template*
 
 *.geojson
-data/osm/
-data/population/
-data/shapes/
+# data/osm/
+# data/population/
+# data/shapes/
+
+data/coolr/nasa_coolr_events_point.dbf
+data/osm/mexico-latest.osm.pbf
+data/population/mex_pop_2025_100m.tif
 
