@@ -1,6 +1,7 @@
 # app.py
 
 from datetime import date, timedelta
+import os
 import streamlit as st
 import pandas as pd
 import geopandas as gpd
@@ -82,8 +83,14 @@ def load_data(selected_inds, code, abbr, fecha_hist, forecast_days, resolution):
     sig = abbr if abbr == "NL" else abbr.capitalize()
 
     # 0) Cargar GeoJSON del estado
-    url = f"https://raw.githubusercontent.com/open-mexico/mexico-geojson/main/{code}-{sig}.geojson"
-    estado_gdf = gpd.read_file(url).to_crs(epsg=4326)
+    if not os.path.exists(f"data/{code}-{sig}.geojson"):
+        url = f"https://raw.githubusercontent.com/open-mexico/mexico-geojson/main/{code}-{sig}.geojson"
+        estado_gdf = gpd.read_file(url).to_crs(epsg=4326)
+        gpd.read_file(url).to_file(f"data/{code}-{sig}.geojson")
+        print(f"Descargado y guardado:", f"data/{code}-{sig}.geojson")
+    else:
+        estado_gdf = gpd.read_file(f"data/{code}-{sig}.geojson").to_crs(epsg=4326)
+        print(f"Usando version descargada:", f"data/{code}-{sig}.geojson")
 
     # 1) Generar grilla H3
     hexes = sorted(geom_to_h3(estado_gdf, res=resolution))
