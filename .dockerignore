@@ -1,0 +1,61 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+.venv/
+env/
+venv/
+
+# Ignore local config
+*.toml
+*.yaml
+*.yml
+*.ini
+*.cfg
+
+# Ignore notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore Git stuff
+.git/
+.gitignore
+
+# Ignore build artifacts
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# Ignore data files if not needed in container
+*.csv
+*.parquet
+*.tif
+*.tiff
+# Unsure if we need to ignore these, probably yes but check the important ones first
+*.geojson
+*.shp
+*.db
+*.sqlite
+*.gpkg
+# data/
+cache/
+
+data/coolr/nasa_coolr_events_point.dbf
+data/osm/mexico-latest.osm.pbf
+data/population/mex_pop_2025_100m.tif
