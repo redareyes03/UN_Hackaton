@@ -200,7 +200,7 @@ st.title("Mapa de Indicadores H3")
 with st.sidebar.form("config_form"):
     st.header("Configuración")
     state_abbr   = st.selectbox("Estado", list(STATE_CODES.keys()), format_func=lambda k: STATE_NAMES[k])
-    resolution   = st.slider("Resolución H3", 0, 10, 5)
+    resolution   = st.slider("Resolución H3", 3, 5, 5) # 3 = coarse, 5 = fine, max 10
     fecha_default= (date.today() - timedelta(days=3))
     fecha_hist   = st.date_input(
         "Fecha histórica",
@@ -212,6 +212,10 @@ with st.sidebar.form("config_form"):
                                   format_func=lambda k: INDICATORS[k])
     forecast_days= st.slider("Días de pronóstico", 0, 30, 0)
     submit       = st.form_submit_button("Cargar datos")
+
+    if 'initialized' not in st.session_state:
+        submit = True
+        
 
 if submit:
     code      = STATE_CODES[state_abbr]
