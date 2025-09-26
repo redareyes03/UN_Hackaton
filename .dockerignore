@@ -48,7 +48,7 @@ logs/
 *.tif
 *.tiff
 # Unsure if we need to ignore these, probably yes but check the important ones first
-*.geojson
+#*.geojson
 *.shp
 *.db
 *.sqlite
@@ -56,6 +56,10 @@ logs/
 # data/
 cache/
 
-data/coolr/nasa_coolr_events_point.dbf
-data/osm/mexico-latest.osm.pbf
-data/population/mex_pop_2025_100m.tif
+# data/coolr/nasa_coolr_events_point.dbf
+# data/osm/mexico-latest.osm.pbf
+# data/population/mex_pop_2025_100m.tif
+
+.firebase/
+# .firebaserc
+# firebase.json

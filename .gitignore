@@ -208,3 +208,4 @@ data/osm/mexico-latest.osm.pbf
 data/population/mex_pop_2025_100m.tif
 
 .DS_Store
+.firebase/
