@@ -8,6 +8,9 @@ import h3
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from libs.utils_h3 import geom_to_h3
+import streamlit as st
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Mapear ISO → sufijo de archivo en el repositorio
 FILENAME_MAP = {
@@ -20,7 +23,7 @@ FILENAME_MAP = {
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
-
+@st.cache_data
 def ingesta_viento_a_offset(
     estado_codigo: str,
     estado_siglas: str,
@@ -64,7 +67,22 @@ def ingesta_viento_a_offset(
             "timezone":      "UTC"
         }
         try:
-            resp = requests.get(BASE_URL, params=params, timeout=10)
+            # Configure retry strategy
+            retry_strategy = Retry(
+                total=5,                # total retries
+                backoff_factor=5,       # wait 5s, then 10s, then 20s...
+                status_forcelist=[429, 500, 502, 503, 504],  # retry on these status codes
+                allowed_methods=["GET","POST"],  # retry GET and POST requests
+            )
+
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+
+            # Create a session and mount adapter
+            session = requests.Session()
+            session.mount("https://", adapter)
+            session.mount("http://", adapter)
+
+            resp = session.get(BASE_URL, params=params, timeout=(60, 360))
             resp.raise_for_status()
             daily = resp.json().get("daily", {})
             # Extraer los únicos valores de la lista

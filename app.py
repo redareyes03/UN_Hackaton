@@ -150,17 +150,31 @@ def load_data(selected_inds, code, abbr, fecha_hist, forecast_days, resolution):
 
             if name == "temp":
                 df_t = result; hex_col = "hex" if "hex" in df_t.columns else "h3"
-                mappings["T2M_MAX"] = dict(zip(df_t[hex_col], df_t["T2M_max"]))
-                mappings["T2M_MIN"] = dict(zip(df_t[hex_col], df_t["T2M_min"]))
+                # Error has been found, "h3" column does not exist
+                # Unknown if it is a local issue or a data source issue
+                if(hex_col == "h3" and "h3" not in df_t.columns):
+                    st.warning("Error: 'h3' column not found in T2M data. Check data source.")
+                    print("Error: 'h3' column not found in T2M data. Check data source.", df_t.columns)
+                else:
+                    mappings["T2M_MAX"] = dict(zip(df_t[hex_col], df_t["T2M_max"]))
+                    mappings["T2M_MIN"] = dict(zip(df_t[hex_col], df_t["T2M_min"]))
+
             elif name == "osm":
                 df_o = result
                 for k in osm_keys:
                     mappings[k] = dict(zip(df_o["hex"], df_o[k]))
             elif name == "wind_hist":
                 df_w = result; hex_col = "hex" if "hex" in df_w.columns else "h3"
-                mappings["W_MED"] = dict(zip(df_w[hex_col], df_w["W_med"]))
-                mappings["W_MAX"] = dict(zip(df_w[hex_col], df_w["W_max"]))
-                mappings["W_MIN"] = dict(zip(df_w[hex_col], df_w["W_min"]))
+                # Error has been found, "h3" column does not exist
+                # Unknown if it is a local issue or a data source issue
+                if(hex_col == "h3" and "h3" not in df_w.columns):
+                    st.warning("Error: 'h3' column not found in wind data. Check data source.")
+                    print("Error: 'h3' column not found in wind data. Check data source.", df_w.columns)
+                else:
+                    mappings["W_MED"] = dict(zip(df_w[hex_col], df_w["W_med"]))
+                    mappings["W_MAX"] = dict(zip(df_w[hex_col], df_w["W_max"]))
+                    mappings["W_MIN"] = dict(zip(df_w[hex_col], df_w["W_min"]))
+
             elif name == "wind_off":
                 raw = result
                 mappings["W_MED_OFF"] = {h:v[0] for h,v in raw.items()}
@@ -200,7 +214,7 @@ st.title("Mapa de Indicadores H3")
 with st.sidebar.form("config_form"):
     st.header("Configuración")
     state_abbr   = st.selectbox("Estado", list(STATE_CODES.keys()), format_func=lambda k: STATE_NAMES[k])
-    resolution   = st.slider("Resolución H3", 3, 5, 5) # 3 = coarse, 5 = fine, max 10
+    resolution   = st.slider("Resolución H3", 3, 7, 5) # 3 = coarse, 5 = fine, currently 7 max, can go up to 10
     fecha_default= (date.today() - timedelta(days=3))
     fecha_hist   = st.date_input(
         "Fecha histórica",
@@ -245,15 +259,28 @@ if not df.empty:
     numeric = [c for c in indicators if pd.api.types.is_numeric_dtype(df[c])]
     color_col = color_by if color_by in numeric else (numeric[0] if numeric else None)
 
-    if color_col:
+    # TODO: An error was found during rendering in production.
+    # It has yet not been reproduced locally.
+    # ValueError: cannot convert float NaN to integer
+    # For the moment, we just drop NaN values for the color column.
+    # This may lead to an empty dataframe, however
+    # df = df.dropna(subset=[color_col])
+    df[color_col] = df[color_col].fillna(df[color_col].min())
+
+    if color_col and df[color_col].notna().any():
         vmin, vmax = df[color_col].min(), df[color_col].max()
         df["color"] = df[color_col].apply(
-            lambda v: [int(65 + (v-vmin)/(vmax-vmin)*(220-65)),
-                       int(105 - (v-vmin)/(vmax-vmin)*(105-20)),
-                       int(225 - (v-vmin)/(vmax-vmin)*(225-60)), 180]
+            lambda v: (
+                [128, 128, 128, 180] if pd.isna(v) else  # fallback gray
+                [int(65 + (v-vmin)/(vmax-vmin)*(220-65)),
+                int(105 - (v-vmin)/(vmax-vmin)*(105-20)),
+                int(225 - (v-vmin)/(vmax-vmin)*(225-60)), 180]
+            )
         )
     else:
-        df["color"] = [[0,128,0,120]] * len(df)
+        # all values NaN → set everything gray
+        df["color"] = [[128, 128, 128, 180]] * len(df)
+        #df["color"] = [[0,128,0,120]] * len(df)
 
     gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lon, df.lat), crs="EPSG:4326")
     centroid = unary_union(gdf.to_crs(epsg=3857).geometry).centroid

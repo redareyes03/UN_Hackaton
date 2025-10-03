@@ -54,6 +54,7 @@ logs/
 *.sqlite
 *.gpkg
 # data/
+*.gpkg
 cache/
 
 # data/coolr/nasa_coolr_events_point.dbf

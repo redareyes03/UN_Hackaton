@@ -6,12 +6,16 @@ import geopandas as gpd
 import numpy as np
 import h3.api.basic_str as h3        # API de cadenas con grid_disk y cell_to_latlng
 from libs.utils_h3 import geom_to_h3
+import streamlit as st
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # API pública de elevación
 ELEVATION_API   = "https://api.open-elevation.com/api/v1/lookup"
 # Umbral de desnivel (m) para riesgo máximo
 DROP_THRESHOLD  = 100.0
 
+@st.cache_data
 def ingesta_inundaciones_por_estado(
     estado_codigo: str,
     estado_siglas: str,
@@ -54,7 +58,23 @@ def ingesta_inundaciones_por_estado(
                     idx_map[n] = len(pts); pts.append({"latitude": lat, "longitude": lon})
 
         # 2b) Llamar a Open-Elevation
-        resp = requests.post(ELEVATION_API, json={"locations": pts}, timeout=10)
+        # Configure retry strategy
+        retry_strategy = Retry(
+            total=5,                # total retries
+            backoff_factor=5,       # wait 5s, then 10s, then 20s...
+            status_forcelist=[429, 500, 502, 503, 504],  # retry on these status codes
+            allowed_methods=["GET","POST"],  # retry GET and POST requests
+        )
+
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+
+        # Create a session and mount adapter
+        session = requests.Session()
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+
+        resp = session.post(ELEVATION_API, json={"locations": pts}, timeout=(60, 360))
+
         resp.raise_for_status()
         elevs = [r["elevation"] for r in resp.json()["results"]]
 

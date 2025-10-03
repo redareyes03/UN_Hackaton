@@ -6,7 +6,13 @@ import h3
 import numpy as np
 import geopandas as gpd
 from libs.utils_h3 import geom_to_h3
+import streamlit as st
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
+# from urllib3.util.retry import Retry
+
+@st.cache_data
 def ingesta_precipitacion_por_estado(
     estado_codigo: str,
     estado_siglas: str,
@@ -37,7 +43,23 @@ def ingesta_precipitacion_por_estado(
     resultados: dict[str, float] = {}
     for hex_id in hexes:
         lat, lon = h3.cell_to_latlng(hex_id)
-        resp = requests.get(
+
+        # Configure retry strategy
+        retry_strategy = Retry(
+            total=5,                # total retries
+            backoff_factor=5,       # wait 5s, then 10s, then 20s...
+            status_forcelist=[429, 500, 502, 503, 504],  # retry on these status codes
+            allowed_methods=["GET","POST"],  # retry GET and POST requests
+        )
+
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+
+        # Create a session and mount adapter
+        session = requests.Session()
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+
+        resp = session.get(
             "https://api.open-meteo.com/v1/forecast",
             params={
                 "latitude":       lat,
@@ -47,7 +69,7 @@ def ingesta_precipitacion_por_estado(
                 "end_date":       date_str,
                 "timezone":       "UTC"
             },
-            timeout=10
+            timeout=(60, 360)
         )
         resp.raise_for_status()
         data = resp.json()
