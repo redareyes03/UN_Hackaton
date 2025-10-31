@@ -56,33 +56,39 @@ UNICEF's "Ahead of the Storm" initiative recognizes the need for **child-centere
 ## Screenshots
 
 ### 1. State-Level Hazard Map Configuration
+
 ![Hazard Map](./Screenshot-1.png)
-*Select a state, H3 spatial resolution, historical/forecast dates, and hazard indicators. The map displays hazard intensity using hexagonal tiling, allowing instant identification of high-risk zones. This enables users to focus preparedness efforts in areas with the highest potential impact on children and infrastructure.*
+_Select a state, H3 spatial resolution, historical/forecast dates, and hazard indicators. The map displays hazard intensity using hexagonal tiling, allowing instant identification of high-risk zones. This enables users to focus preparedness efforts in areas with the highest potential impact on children and infrastructure._
 
 ---
 
 ### 2. Detailed Hexagon Metrics
+
 ![Hexagon Metrics](./Screenshot-2.png)
-*Clicking any hexagon shows a detailed breakdown: temperature, precipitation, wind (historic & forecast), flood and landslide risk, population, and infrastructure presence. This supports micro-planning and prioritizing vulnerable communities, ensuring no critical details are missed when planning emergency responses.*
+_Clicking any hexagon shows a detailed breakdown: temperature, precipitation, wind (historic & forecast), flood and landslide risk, population, and infrastructure presence. This supports micro-planning and prioritizing vulnerable communities, ensuring no critical details are missed when planning emergency responses._
 
 ---
 
 ### 3. Dynamic Hazard & Infrastructure Overlay
+
 ![Hazard & Infrastructure Overlay](./Screenshot-3.png)
-*Hovering over a hexagon reveals all associated hazards and exposure metrics—ideal for scenario exploration, cascading risk analysis, and assessing potential child impact and response needs. This visual feedback helps quickly understand compounding vulnerabilities and critical areas for proactive intervention.*
+_Hovering over a hexagon reveals all associated hazards and exposure metrics—ideal for scenario exploration, cascading risk analysis, and assessing potential child impact and response needs. This visual feedback helps quickly understand compounding vulnerabilities and critical areas for proactive intervention._
 
 ---
 
 ## Installation
 
 1. **Clone this repository:**
+
    ```bash
    git clone <repo-url>
    cd <repo-folder>
-   
+   ```
+
 2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
+   ```
 
 > **Note:**
 > This app requires four large data files not included in the repo due to size limits. See [Required Data Files](#required-data-files).
@@ -95,9 +101,9 @@ To run the app successfully, **you must obtain 4 external data files** (details 
 **Place these files in the appropriate folder as instructed by the project owner or documentation.**
 If you need help sourcing these files, please contact the maintainer.
 
-* `data/coolr/nasa_coolr_events_point.dbf` — NASA Global Landslide Catalog (GLC)
-* `data/osm/mexico-latest.osm.pbf` — Locations of hospitals, clinics, schools, etc.
-* `data/population/mex_pop_2025_100m.tif` — 2025 population raster (100 m resolution).
+- `data/coolr/nasa_coolr_events_point.dbf` — NASA Global Landslide Catalog (GLC)
+- `data/osm/mexico-latest.osm.pbf` — Locations of hospitals, clinics, schools, etc.
+- `data/population/mex_pop_2025_100m.tif` — 2025 population raster (100 m resolution).
 
 ---
 
@@ -109,37 +115,54 @@ Once dependencies and data files are in place, launch the app:
 streamlit run app.py
 ```
 
-* Access the app in your browser at [http://localhost:8501](http://localhost:8501).
-* Use the sidebar to configure state, H3 resolution, analysis date, and select one or multiple hazard/impact indicators.
-* Explore maps and metrics, identify critical child-focused vulnerabilities, and use results for proactive disaster planning.
+- Access the app in your browser at [http://localhost:8501](http://localhost:8501).
+- Use the sidebar to configure state, H3 resolution, analysis date, and select one or multiple hazard/impact indicators.
+- Explore maps and metrics, identify critical child-focused vulnerabilities, and use results for proactive disaster planning.
 
 ---
+
+## Google Cloud Run
+
+This repository includes a configuration to build and submit to Google Cloud Run, once you have an account and eveything else set-up, follow the next steps to deploy. Make sure y ou can run the repository locally before attempting to deploy it in the cloud.
+
+1. **Submit the build:**
+
+```bash
+gcloud builds submit --tag gcr.io/app/name-of-app
+```
+
+2. **Deploy the build:**
+
+```bash
+# The repository requires a large amount of memory to work properly, 2Gi is recomended
+gcloud run deploy streamlit-app --image gcr.io/app/name-of-app --platform managed --region us-central1 --memory 2Gi
+```
 
 ## Dependencies
 
 Key Python libraries (see `requirements.txt` for full list):
 
-* `streamlit` (web app interface)
-* `pandas`, `geopandas` (data processing)
-* `pydeck`, `h3` (mapping and spatial analysis)
-* `concurrent.futures` (parallel data loading)
-* `matplotlib`, `scikit-learn`, `scipy`, `torch` (scientific computing & ML)
+- `streamlit` (web app interface)
+- `pandas`, `geopandas` (data processing)
+- `pydeck`, `h3` (mapping and spatial analysis)
+- `concurrent.futures` (parallel data loading)
+- `matplotlib`, `scikit-learn`, `scipy`, `torch` (scientific computing & ML)
 
 ---
 
 ## Troubleshooting
 
-* **Missing data files:**
+- **Missing data files:**
   Ensure all required external files are present and correctly placed.
 
-* **Port already in use:**
+- **Port already in use:**
   Change the Streamlit port with:
 
   ```bash
   streamlit run app.py --server.port <another-port>
   ```
 
-* **Dependency errors:**
+- **Dependency errors:**
   Double-check your Python version and that all libraries are installed:
 
   ```bash
